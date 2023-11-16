@@ -59,8 +59,8 @@
     <div>
         <div>
             <div style="color: white; margin-right: 40px; margin-bottom: 5px;">
-                <h1 class="city">القاهرة</h1>
-                <h6 style="font-size: 40px; font-weight: 400;">التاريخ</h6>
+                <h1 class="city" id="cityName">القاهرة</h1>
+                <h6 style="font-size: 40px; font-weight: 400;" id="date">التاريخ</h6>
             </div>
             <hr style="margin: 0 50px;">
             <div style="height: 300px; margin-top: 80px; display: flex; justify-content: space-around;">
@@ -69,7 +69,7 @@
                         <h1>الفجر</h1>
                     </div>
                     <div class="body center" style="height: 80%;">
-                        <div class="time">0:00</div>
+                        <div class="time" id="fajr">0:00</div>
                     </div>
                 </div>
                 <div class="card">
@@ -77,7 +77,7 @@
                         <h1>الشروق</h1>
                     </div>
                     <div class="body center" style="height: 80%;">
-                        <div class="time">0:00</div>
+                        <div class="time" id="sunrise">0:00</div>
                     </div>
                 </div>
                 <div class="card">
@@ -85,7 +85,7 @@
                         <h1>الظهر</h1>
                     </div>
                     <div class="body center" style="height: 80%;">
-                        <div class="time">0:00</div>
+                        <div class="time" id="zuhr">0:00</div>
                     </div>
                 </div>
                 <div class="card">
@@ -93,7 +93,7 @@
                         <h1>العصر</h1>
                     </div>
                     <div class="body center" style="height: 80%;">
-                        <div class="time">0:00</div>
+                        <div class="time" id="asr">0:00</div>
                     </div>
                 </div>
                 <div class="card">
@@ -101,7 +101,7 @@
                         <h1>المغرب</h1>
                     </div>
                     <div class="body center" style="height: 80%;">
-                        <div class="time">0:00</div>
+                        <div class="time" id="maghrib">0:00</div>
                     </div>
                 </div>
                 <div class="card">
@@ -109,19 +109,93 @@
                         <h1>العشاء</h1>
                     </div>
                     <div class="body center" style="height: 80%;">
-                        <div class="time">0:00</div>
+                        <div class="time" id="isha">0:00</div>
                     </div>
                 </div>
             </div>
             <div class="center" style="margin-top: 30px;">
-                <select name="" id="" style="width: 300px; height: 35px; font-size: 25px; font-family: 'Tajawal', sans-serif; background: none; color: #d1d4c3; border-radius: 4px;">
-                    <option value="">القاهرة</option>
-                    <option value="">القاهرة</option>
-                    <option value="">القاهرة</option>
-                    <option value="">القاهرة</option>
+                <select name="" id="cities" style="width: 300px; height: 35px; font-size: 25px; font-family: 'Tajawal', sans-serif; background: none; color: #d1d4c3; border-radius: 4px;">
+
                 </select>
             </div>
         </div>
     </div>
 </body>
+<script src="/node_modules/axios/dist/axios.min.js"></script>
+<script>
+
+    function fill(id, time) {
+        document.getElementById(id).innerHTML = time
+    }
+
+    function prayer(cityName) {
+
+        let varia = {
+            country: "EG",
+            city: cityName
+        }
+
+    axios.get('http://api.aladhan.com/v1/timingsByCity', {
+    params: varia
+    })
+    .then(function (response) {
+        const timings = response.data.data.timings
+        fill("fajr", timings.Fajr)
+        fill("sunrise", timings.Sunrise)
+        fill("zuhr", timings.Dhuhr)
+        fill("asr", timings.Asr)
+        fill("maghrib", timings.Sunset)
+        fill("isha", timings.Isha)
+
+        const date = response.data.data.date.readable
+        const week = response.data.data.date.hijri.weekday.ar
+        document.getElementById("date").innerHTML = week + " " + date
+        console.log(week + " " + date)
+    })
+    .catch(function (error) {
+        console.log(error);
+    })
+
+}
+
+    let cities = [
+        {
+            arabic : "القاهرة",
+            name : "Cairo"
+        },
+        {
+            arabic : "الإسكندرية",
+            name : "Alexandria"
+        },
+        {
+            arabic : "أسوان",
+            name : "Aswan"
+        },
+        {
+            arabic : "السويس",
+            name : "Suez"
+        }
+    ]
+
+    for (let city of cities) {
+        const content = `
+            <option>${city.arabic}</option>
+        `
+        document.getElementById("cities").innerHTML += content
+    }
+
+    prayer("Aswan")
+
+    document.getElementById("cities").addEventListener("change", function () {
+        document.getElementById("cityName").innerHTML = this.value
+        let cityName = ""
+        for (let city of cities) {
+            if (city.arabic == this.value) {
+                cityName = city.name
+            }
+        }
+        prayer(cityName)
+    })
+
+</script>
 </html>
